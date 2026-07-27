@@ -1,21 +1,39 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
-namespace TodoListConsole
+namespace Todolist
 {
+    public class Tarefa
+    {
+        public int Id { get; set; }
+        public string Descricao { get; set; }
+        public bool Concluida { get; set; }
+
+        public Tarefa() { }
+
+        public Tarefa(int id, string descricao)
+        {
+            Id = id;
+            Descricao = descricao;
+            Concluida = false;
+        }
+    }
+
     class Program
     {
-        static List<Tarefa> listaDeTarefas = new List<Tarefa>();
-        static int proximoId = 1;
-        static string caminhoArquivo = "tarefas.json";
+        private static List<Tarefa> listaDeTarefas = new List<Tarefa>();
+        private static int proximoId = 1;
+        private static readonly string caminhoArquivo = "tarefas.json";
 
         static void Main(string[] args)
         {
             Console.Clear();
-
             CarregarTarefasDoArquivo();
+
             bool executando = true;
 
             while (executando)
@@ -25,28 +43,28 @@ namespace TodoListConsole
 
                 switch (opcao)
                 {
-                    case "1": AdicionarTarefa(); break;
+                    case "1":
+                        AdicionarTarefa();
+                        break;
                     case "2":
                         ListarTarefas();
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.WriteLine("\n  Pressione qualquer tecla para voltar...");
-                        Console.ResetColor();
-                        Console.ReadKey();
+                        PausarTela();
                         break;
-                    case "3": ConcluirTarefa(); break;
-                    case "4": ExcluirTarefa(); break;
+                    case "3":
+                        ConcluirTarefa();
+                        break;
+                    case "4":
+                        ExcluirTarefa();
+                        break;
                     case "5":
                         executando = false;
                         Console.Clear();
-                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.ForegroundColor = ConsoleColor.Cyan;
                         Console.WriteLine("\n  Saindo do sistema... Até logo! 👋\n");
                         Console.ResetColor();
                         break;
                     default:
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\n  Opção inválida! Tente novamente.");
-                        Console.ResetColor();
-                        System.Threading.Thread.Sleep(1000);
+                        ExibirMensagemErro("\n  Opção inválida! Tente novamente.");
                         break;
                 }
             }
@@ -56,7 +74,7 @@ namespace TodoListConsole
         {
             Console.Clear();
 
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("┌────────────────────────────────────────┐");
             Console.WriteLine("│        GERENCIADOR DE TAREFAS          │");
             Console.WriteLine("└────────────────────────────────────────┘");
@@ -69,7 +87,7 @@ namespace TodoListConsole
             Console.WriteLine("  [4]  Excluir uma Tarefa");
             Console.WriteLine("  [5]  Sair do Programa");
 
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("──────────────────────────────────────────");
             Console.ResetColor();
 
@@ -81,7 +99,7 @@ namespace TodoListConsole
         {
             Console.Clear();
 
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("┌────────────────────────────────────────────────────────┐");
             Console.WriteLine("│                  SUA LISTA DE TAREFAS                  │");
             Console.WriteLine("├──────┬───────────┬─────────────────────────────────────┤");
@@ -91,7 +109,7 @@ namespace TodoListConsole
 
             if (listaDeTarefas.Count == 0)
             {
-                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("│  --  │  VAZIO    │ Nenhuma tarefa cadastrada ainda.    │");
                 Console.ResetColor();
             }
@@ -99,13 +117,13 @@ namespace TodoListConsole
             {
                 foreach (var tarefa in listaDeTarefas)
                 {
-                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.Write("│ ");
                     Console.ResetColor();
 
                     Console.Write($"{tarefa.Id,-4}");
 
-                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.Write(" │ ");
                     Console.ResetColor();
 
@@ -121,20 +139,23 @@ namespace TodoListConsole
                     }
                     Console.ResetColor();
 
-                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.Write(" │ ");
                     Console.ResetColor();
 
-                    string desc = tarefa.Descricao.Length > 33 ? tarefa.Descricao.Substring(0, 30) + "..." : tarefa.Descricao;
+                    string desc = tarefa.Descricao.Length > 33
+                        ? tarefa.Descricao.Substring(0, 30) + "..."
+                        : tarefa.Descricao;
+
                     Console.Write($"{desc,-35}");
 
-                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine(" │");
                     Console.ResetColor();
                 }
             }
 
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("└──────┴───────────┴─────────────────────────────────────┘");
             Console.ResetColor();
         }
@@ -142,7 +163,8 @@ namespace TodoListConsole
         static void AdicionarTarefa()
         {
             Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Magenta;
+
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(" Novo Item:");
             Console.ResetColor();
 
@@ -151,86 +173,97 @@ namespace TodoListConsole
 
             if (!string.IsNullOrWhiteSpace(descricao))
             {
-                Tarefa novaTarefa = new Tarefa(proximoId, descricao);
+                Tarefa novaTarefa = new Tarefa(proximoId++, descricao.Trim());
                 listaDeTarefas.Add(novaTarefa);
-                proximoId++;
                 SalvarTarefasNoArquivo();
 
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("\n  ✔ Tarefa adicionada com sucesso!");
+                ExibirMensagemSucesso("\n  ✔ Tarefa adicionada com sucesso!");
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("\n  ⚠ A descrição não pode ser vazia.");
+                ExibirMensagemErro("\n  ⚠ A descrição não pode ser vazia.");
             }
-            Console.ResetColor();
-            System.Threading.Thread.Sleep(1200);
         }
 
         static void ConcluirTarefa()
         {
             ListarTarefas();
-            if (listaDeTarefas.Count == 0) { System.Threading.Thread.Sleep(1500); return; }
+            if (listaDeTarefas.Count == 0)
+            {
+                PausarTela();
+                return;
+            }
 
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write("\n  » Digite o ID da tarefa para concluir: ");
+            Console.ResetColor();
+
             if (int.TryParse(Console.ReadLine(), out int id))
             {
-                Tarefa tarefa = listaDeTarefas.Find(t => t.Id == id);
+                Tarefa tarefa = listaDeTarefas.FirstOrDefault(t => t.Id == id);
                 if (tarefa != null)
                 {
                     tarefa.Concluida = true;
                     SalvarTarefasNoArquivo();
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("\n  Excelente! Tarefa atualizada.");
+                    ExibirMensagemSucesso("\n  Excelente! Tarefa atualizada.");
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("\n  ID não encontrado.");
+                    ExibirMensagemErro("\n  ID não encontrado.");
                 }
             }
-            Console.ResetColor();
-            System.Threading.Thread.Sleep(1200);
+            else
+            {
+                ExibirMensagemErro("\n  Por favor, digite um número de ID válido.");
+            }
         }
 
         static void ExcluirTarefa()
         {
             ListarTarefas();
-            if (listaDeTarefas.Count == 0) { System.Threading.Thread.Sleep(1500); return; }
+            if (listaDeTarefas.Count == 0)
+            {
+                PausarTela();
+                return;
+            }
 
-            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write("\n  » Digite o ID da tarefa que deseja apagar: ");
+            Console.ResetColor();
+
             if (int.TryParse(Console.ReadLine(), out int id))
             {
-                Tarefa tarefa = listaDeTarefas.Find(t => t.Id == id);
+                Tarefa tarefa = listaDeTarefas.FirstOrDefault(t => t.Id == id);
                 if (tarefa != null)
                 {
                     listaDeTarefas.Remove(tarefa);
                     SalvarTarefasNoArquivo();
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine("\n  Tarefa removida do sistema.");
+                    ExibirMensagemSucesso("\n  Tarefa removida do sistema.");
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("\n  ID não encontrado.");
+                    ExibirMensagemErro("\n  ID não encontrado.");
                 }
             }
-            Console.ResetColor();
-            System.Threading.Thread.Sleep(1200);
+            else
+            {
+                ExibirMensagemErro("\n  Por favor, digite um número de ID válido.");
+            }
         }
+
+        #region Métodos Utilitários
 
         static void SalvarTarefasNoArquivo()
         {
             try
             {
-                string json = JsonSerializer.Serialize(listaDeTarefas, new JsonSerializerOptions { WriteIndented = true });
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                string json = JsonSerializer.Serialize(listaDeTarefas, options);
                 File.WriteAllText(caminhoArquivo, json);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao salvar: {ex.Message}");
+                ExibirMensagemErro($"\n  Erro ao salvar dados: {ex.Message}");
             }
         }
 
@@ -242,13 +275,44 @@ namespace TodoListConsole
                 {
                     string json = File.ReadAllText(caminhoArquivo);
                     listaDeTarefas = JsonSerializer.Deserialize<List<Tarefa>>(json) ?? new List<Tarefa>();
-                    foreach (var t in listaDeTarefas)
+
+                    if (listaDeTarefas.Count > 0)
                     {
-                        if (t.Id >= proximoId) proximoId = t.Id + 1;
+                        proximoId = listaDeTarefas.Max(t => t.Id) + 1;
                     }
                 }
             }
-            catch { listaDeTarefas = new List<Tarefa>(); }
+            catch
+            {
+                listaDeTarefas = new List<Tarefa>();
+                proximoId = 1;
+            }
         }
+
+        static void ExibirMensagemSucesso(string mensagem)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(mensagem);
+            Console.ResetColor();
+            PausarTela();
+        }
+
+        static void ExibirMensagemErro(string mensagem)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(mensagem);
+            Console.ResetColor();
+            PausarTela();
+        }
+
+        static void PausarTela(string mensagem = "\n  Pressione qualquer tecla para continuar...")
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(mensagem);
+            Console.ResetColor();
+            Console.ReadKey(true);
+        }
+
+        #endregion
     }
 }
